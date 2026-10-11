@@ -1,0 +1,69 @@
+{
+  "name": "lyz-robotwin",
+
+  "dockerFile": "Dockerfile",
+  "build": {
+    "target": "target",
+    "options": ["--network=host"],
+    "args": {
+      "ROBOTWIN_REPO": "https://github.com/horserr/RoboTwin.git",
+      "HTTP_PROXY": "http://127.0.0.1:7890",
+      "HTTPS_PROXY": "http://127.0.0.1:7890",
+      "http_proxy": "http://127.0.0.1:7890",
+      "https_proxy": "http://127.0.0.1:7890"
+    }
+  },
+
+  "runArgs": [
+    // note: cannot use host network for wslc
+    // use this domain for windows host: host.docker.internal
+    // "--network=host"
+    "--gpus",
+    "all",
+    "--network=host"
+  ],
+
+  "containerEnv": {
+    "CUDA_VISIBLE_DEVICES": "1",
+
+    "GITHUB_USERNAME": "horserr",
+    "GH_TOKEN": "${localEnv:GH_TOKEN}",
+    "GITHUB_ACCESS_TOKEN": "${localEnv:GH_TOKEN}"
+  },
+
+  "remoteUser": "root",
+  "workspaceFolder": "/root/workspace/RoboTwin",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/root/workspace/RoboTwin,type=bind,consistency=cached",
+  "mounts": [
+    {
+      "source": "${localEnv:HOME}/.cache/uv",
+      "target": "/root/.cache/uv",
+      "type": "bind"
+    }
+  ],
+
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.eol": "\n",
+        "http.useLocalProxyConfiguration": false
+      },
+      "extensions": [
+        "FanaticPythoner.better-todo-tree",
+        "ms-python.python",
+        "charliermarsh.ruff",
+        "the0807.uv-toolkit",
+        "fill-labs.dependi",
+        "meta.pyrefly"
+      ]
+    }
+  },
+
+  "features": {
+    // "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+
+  "onCreateCommand": "sh -c \"$(curl -fsLS https://get.chezmoi.io)\" -- -b /usr/bin",
+
+  "postCreateCommand": "chezmoi init --source=~/.config/.dotfiles --apply $GITHUB_USERNAME"
+}
