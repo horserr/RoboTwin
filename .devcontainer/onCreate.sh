@@ -1,4 +1,22 @@
-set -o euo pipefail
+#!/usr/bin/env bash
+set -euo pipefail
+
+VENV="${UV_PROJECT_ENVIRONMENT:-/opt/venv}"
+
+# `pyproject.toml` lists curobo and pytorch3d under `no-build-isolation-package`,
+# which tells uv to build them inside the project venv and to *assume* their
+# build dependencies are already installed. uv-managed venvs don't ship
+# setuptools, and curobo's setup.py does `import torch` at build time, so these
+# must be bootstrapped before `uv sync` can resolve/build the project.
+if [ ! -x "${VENV}/bin/python" ]; then
+    uv venv "${VENV}" --python 3.10
+fi
+if ! "${VENV}/bin/python" -c "import torch" >/dev/null 2>&1; then
+    echo "Bootstrapping build dependencies (setuptools, torch) into ${VENV} ..."
+    uv pip install --python "${VENV}" \
+        "setuptools>=45" "setuptools_scm>=6.2" wheel \
+        torch==2.4.1 --index https://download.pytorch.org/whl/cu121
+fi
 
 uv sync
 

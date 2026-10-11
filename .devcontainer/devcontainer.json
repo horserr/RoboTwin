@@ -4,7 +4,7 @@
   "dockerFile": "Dockerfile",
   "build": {
     "target": "target",
-    "options": ["--network=host"],
+    "options": ["--network=host", "--progress=plain"],
     "args": {
       "ROBOTWIN_REPO": "https://github.com/horserr/RoboTwin.git",
       "HTTP_PROXY": "http://127.0.0.1:7890",
@@ -24,7 +24,9 @@
   ],
 
   "containerEnv": {
-    "CUDA_VISIBLE_DEVICES": "1",
+    // TODO change this for the server
+    // "CUDA_VISIBLE_DEVICES": "1",
+    "UV_PROJECT_ENVIRONMENT": "/opt/venv",
 
     "GITHUB_USERNAME": "horserr",
     "GH_TOKEN": "${localEnv:GH_TOKEN}",
@@ -36,9 +38,14 @@
   "workspaceMount": "source=${localWorkspaceFolder},target=/root/workspace/RoboTwin,type=bind,consistency=cached",
   "mounts": [
     {
-      "source": "${localEnv:HOME}/.cache/uv",
+      "source": "uv-cache-volume",
       "target": "/root/.cache/uv",
-      "type": "bind"
+      "type": "volume"
+    },
+    {
+      "source": "robotwin-venv-volume",
+      "target": "/opt/venv",
+      "type": "volume"
     }
   ],
 
@@ -60,10 +67,13 @@
   },
 
   "features": {
-    // "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
 
-  "onCreateCommand": "sh -c \"$(curl -fsLS https://get.chezmoi.io)\" -- -b /usr/bin",
+  "onCreateCommand": [
+    "${containerWorkspaceFolder}/.devcontainer/initialize.sh",
+    "${containerWorkspaceFolder}/.devcontainer/onCreate.sh"
+  ],
 
-  "postCreateCommand": "chezmoi init --source=~/.config/.dotfiles --apply $GITHUB_USERNAME"
+  "postCreateCommand": "${containerWorkspaceFolder}/.devcontainer/postCreate.sh"
 }

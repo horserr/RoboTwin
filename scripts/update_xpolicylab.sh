@@ -75,7 +75,14 @@ branch="${XPOLICYLAB_BRANCH:-${configured_branch:-main}}"
 pinned_before="$(git rev-parse "HEAD:${SUBMODULE_PATH}" 2>/dev/null || true)"
 
 if [[ -e "${SUBMODULE_PATH}/.git" ]]; then
-    if ! git -C "${SUBMODULE_PATH}" diff --quiet || \
+    # The upstream tree stores nearly every file as 100755. On Windows / NTFS
+    # bind mounts (dev containers, WSL) git cannot represent the executable bit,
+    # so all those files show up as "mode change 100755 => 100644" and the guard
+    # below would abort even though nothing was actually edited. Ignoring file
+    # modes for this submodule keeps the working tree clean and the update safe.
+    git -C "${SUBMODULE_PATH}" config core.fileMode false
+
+    if ! git -C "${SUBMODULE_PATH}" -c core.fileMode=false diff --quiet || \
        ! git -C "${SUBMODULE_PATH}" diff --cached --quiet; then
         echo "[XPolicyLab][ERROR] Tracked local changes would block a safe update." >&2
         echo "Commit or stash the changes inside ${SUBMODULE_PATH}/, then retry." >&2
