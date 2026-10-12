@@ -70,10 +70,7 @@
     // "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
 
-  "onCreateCommand": [
-    "${containerWorkspaceFolder}/.devcontainer/initialize.sh",
-    "${containerWorkspaceFolder}/.devcontainer/onCreate.sh"
-  ],
+  "onCreateCommand": "${containerWorkspaceFolder}/.devcontainer/initialize.sh && ${containerWorkspaceFolder}/.devcontainer/onCreate.sh",
 
   "postCreateCommand": "${containerWorkspaceFolder}/.devcontainer/postCreate.sh"
 }

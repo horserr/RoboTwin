@@ -3,6 +3,11 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+# The workspace is bind-mounted from the WSL host, so its owner differs from
+# the container user (root). Mark it (and submodules) as safe for git.
+git config --global --add safe.directory "$ROOT"
+git config --global --add safe.directory '*'
+
 # Idempotent: safe to re-run on every container creation / rebuild.
 echo "[initialize] Updating git submodules..."
 git submodule update --init --recursive
