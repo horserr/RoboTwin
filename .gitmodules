@@ -1,6 +1,6 @@
 [submodule "XPolicyLab"]
 	path = XPolicyLab
-	url = https://github.com/XPolicyLab/XPolicyLab.git
+	url = https://github.com/horserr/XPolicyLab.git
 	branch = main
 [submodule "doc"]
 	path = doc
