@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/cuda:12.1.1-cudnn8-devel-ubuntu22.04 AS base
+FROM nvcr.io/nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
