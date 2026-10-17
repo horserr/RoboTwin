@@ -4,8 +4,8 @@ version = "0.1.0"
 requires-python = ">=3.10,<3.11"
 
 dependencies = [
-  "torch==2.4.1",
-  "torchvision",
+  "torch==2.7.1",
+  "torchvision==0.22.1",
   "numpy==1.26.4",
   "opencv-python==4.10.0.84",
   "opencv-python-headless==4.10.0.84",
@@ -39,7 +39,8 @@ dependencies = [
   # git based dependencies
   "pytorch3d",
   "nvidia-curobo",
-  "xpolicylab"
+  "xpolicylab",
+  "setuptools<82.0.0",
 ]
 
 [build-system]
@@ -52,13 +53,13 @@ package = false
 no-build-isolation-package = ["pytorch3d", "nvidia-curobo"]
 
 [[tool.uv.index]]
-name = "pytorch-cu121"
-url = "https://download.pytorch.org/whl/cu121"
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
 explicit = true
 
 [tool.uv.sources]
-torch = { index = "pytorch-cu121" }
-torchvision = { index = "pytorch-cu121" }
+torch = { index = "pytorch-cu128" }
+torchvision = { index = "pytorch-cu128" }
 pytorch3d = { git = "https://github.com/facebookresearch/pytorch3d", branch = "stable" }
 xpolicylab = { path = "./XPolicyLab", editable = true }
 nvidia-curobo = { path = "./env/curobo", editable = true }

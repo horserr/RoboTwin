@@ -16,7 +16,7 @@ if ! "${VENV}/bin/python" -c "import torch" >/dev/null 2>&1; then
     echo "Bootstrapping build dependencies (setuptools, torch) into ${VENV} ..."
     uv pip install --python "${VENV}" \
         "setuptools>=45" "setuptools_scm>=6.2" wheel \
-        torch==2.4.1 --index https://download.pytorch.org/whl/cu121
+        torch==2.7.1 --index https://download.pytorch.org/whl/cu128
 fi
 
 uv sync --frozen
