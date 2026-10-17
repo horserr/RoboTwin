@@ -14,11 +14,15 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   libvulkan1 \
   mesa-vulkan-drivers \
   vulkan-tools \
+  tzdata \
   # needed to build C/CUDA extensions (pytorch3d, curobo)
   python3-dev \
   ninja-build \
   build-essential \
   && rm -rf /var/lib/apt/lists/*
+
+# 宿主机为 CST (Asia/Shanghai, UTC+8)，设置时区避免容器 date 显示 UTC
+ENV TZ=Asia/Shanghai
 
 # uv 缓存配置
 ENV UV_CACHE_DIR=/root/.cache/uv
