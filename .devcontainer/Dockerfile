@@ -6,12 +6,10 @@ ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
   apt-get update && apt-get install -y --no-install-recommends \
-  software-properties-common \
-  && add-apt-repository ppa:git-core/ppa -y \
-  && apt-get update && apt-get install -y --no-install-recommends \
   git \
   curl \
   wget \
+  unzip \
   ffmpeg \
   libvulkan1 \
   mesa-vulkan-drivers \
@@ -33,3 +31,8 @@ ENV PATH="${UV_PROJECT_ENVIRONMENT}/bin:${PATH}"
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 FROM base AS target
+
+ENV HF_HUB_CACHE=/root/.cache/huggingface/hub
+
+RUN --mount=type=cache,target=/root/.cache/uv \
+  uv tool install huggingface_hub

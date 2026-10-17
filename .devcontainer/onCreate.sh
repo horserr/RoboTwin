@@ -11,6 +11,7 @@ VENV="${UV_PROJECT_ENVIRONMENT:-/opt/venv}"
 if [ ! -x "${VENV}/bin/python" ]; then
     uv venv "${VENV}" --python 3.10
 fi
+
 if ! "${VENV}/bin/python" -c "import torch" >/dev/null 2>&1; then
     echo "Bootstrapping build dependencies (setuptools, torch) into ${VENV} ..."
     uv pip install --python "${VENV}" \
@@ -18,7 +19,7 @@ if ! "${VENV}/bin/python" -c "import torch" >/dev/null 2>&1; then
         torch==2.4.1 --index https://download.pytorch.org/whl/cu121
 fi
 
-uv sync
+uv sync --frozen
 
 echo "Adjusting code in sapien/wrapper/urdf_loader.py ..."
 # location of sapien, like "~/.conda/envs/RoboTwin/lib/python3.10/site-packages/sapien"
@@ -44,7 +45,6 @@ URDF_LOADER=$SAPIEN_LOCATION/wrapper/urdf_loader.py
 # 673             with open(srdf_file, "r", encoding="utf-8") as f:
 # 674                 self.ignore_pairs = self.parse_srdf(f.read())
 sed -i -E 's/("r")(\))( as)/\1, encoding="utf-8") as/g' $URDF_LOADER
-
 
 echo "Adjusting code in mplib/planner.py ..."
 # location of mplib, like "~/.conda/envs/RoboTwin/lib/python3.10/site-packages/mplib"

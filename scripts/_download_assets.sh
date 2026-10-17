@@ -1,17 +1,9 @@
+set -euo pipefail
+
 cd assets
-python _download.py
-
-# background_texture
-unzip background_texture.zip
-rm -rf background_texture.zip
-
-# embodiments
-unzip embodiments.zip
-rm -rf embodiments.zip
-
-# objects
-unzip objects.zip
-rm -rf objects.zip
+# Archives stay in the Hugging Face cache and are extracted from there, so a
+# re-run (or a container rebuild) never downloads them again.
+python -u _download.py
 
 cd ..
 echo "Configuring Path ..."

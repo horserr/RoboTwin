@@ -6,11 +6,11 @@
     "target": "target",
     "options": ["--network=host", "--progress=plain"],
     "args": {
-      "ROBOTWIN_REPO": "https://github.com/horserr/RoboTwin.git",
-      "HTTP_PROXY": "http://127.0.0.1:7890",
-      "HTTPS_PROXY": "http://127.0.0.1:7890",
-      "http_proxy": "http://127.0.0.1:7890",
-      "https_proxy": "http://127.0.0.1:7890"
+      "ROBOTWIN_REPO": "https://github.com/horserr/RoboTwin.git"
+      // "HTTP_PROXY": "http://127.0.0.1:7890",
+      // "HTTPS_PROXY": "http://127.0.0.1:7890",
+      // "http_proxy": "http://127.0.0.1:7890",
+      // "https_proxy": "http://127.0.0.1:7890"
     }
   },
 
@@ -30,7 +30,9 @@
 
     "GITHUB_USERNAME": "horserr",
     "GH_TOKEN": "${localEnv:GH_TOKEN}",
-    "GITHUB_ACCESS_TOKEN": "${localEnv:GH_TOKEN}"
+    "GITHUB_ACCESS_TOKEN": "${localEnv:GH_TOKEN}",
+
+    "HF_TOKEN": "${localEnv:HF_TOKEN}"
   },
 
   "remoteUser": "root",
@@ -40,6 +42,11 @@
     {
       "source": "uv-cache-volume",
       "target": "/root/.cache/uv",
+      "type": "volume"
+    },
+    {
+      "source": "huggingface-cache-volume",
+      "target": "/root/.cache/huggingface/hub",
       "type": "volume"
     },
     {
@@ -72,5 +79,5 @@
 
   "onCreateCommand": "${containerWorkspaceFolder}/.devcontainer/initialize.sh && ${containerWorkspaceFolder}/.devcontainer/onCreate.sh",
 
-  "postCreateCommand": "${containerWorkspaceFolder}/.devcontainer/postCreate.sh"
+  "postCreateCommand": "${containerWorkspaceFolder}/.devcontainer/postCreate.sh && ${containerWorkspaceFolder}/.devcontainer/installAssets.sh"
 }
