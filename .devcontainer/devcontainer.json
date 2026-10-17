@@ -1,5 +1,6 @@
 {
   "name": "lyz-robotwin",
+  "shutdownAction": "none",
 
   "dockerFile": "Dockerfile",
   "build": {
