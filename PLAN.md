@@ -36,7 +36,7 @@
 
 ### Phase 2 — 下载并放置官方 checkpoint
 
-6. 下载：`hf download TianxingChen/RoboTwin2.0 cotrain_ckpt/Pi_05/RoboTwin-lerobot_v30-aloha_agilex-joint-0.tar.gz`。
+6. 下载：`hf download TianxingChen/RoboTwin2.0 cotrain_ckpt/Pi_05/RoboTwin-lerobot_v30-aloha_agilex-joint-0.tar.gz --repo-type dataset --local-dir checkpoints`（该仓库是 **dataset** 类型，必须加 `--repo-type dataset`，否则报 "Model not found"）。
 7. 解压到 `XPolicyLab/policy/Pi_05/checkpoints/RoboTwin-lerobot_v30-aloha_agilex-joint-0/`，确认含 `params/` 与 `assets/`。
 8. 检查 `assets/` 子目录名是否与 `deploy.yml` 的 `repo_id: arx_x5_sim` 一致；不一致则改 `repo_id`。`train_config_name` 保持 `pi05_base_aloha_full_sim_arx-x5_seed_0`（adapter 内唯一 pi05 配置）。
 

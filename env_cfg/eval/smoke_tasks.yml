@@ -1,0 +1,10 @@
+# Single-task smoke test for Pi_05 on RoboTwin.
+gpu_ids: "0"
+jobs_per_gpu: 1
+num_workers: 1
+enable_remote: false
+policy_server_ip: 127.0.0.1
+policy_server_port: [18080, 18081, 18082, 18083]
+
+tasks:
+  - beat_block_hammer
