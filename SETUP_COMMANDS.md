@@ -145,7 +145,61 @@ date
 # Dockerfile 已加 tzdata + ENV TZ=Asia/Shanghai，重建后永久生效
 ```
 
-## 8. 已知非阻塞警告
+## 8. 排障：所有 job 秒退 failed（ModuleNotFoundError: No module named 'jax'）
+
+现象：`eval_policy.sh multitask` 每个 job 约 2s 内 return_code=1，日志里出现
+
+```
+[SERVER] Activating uv environment: .../Pi_05/openpi/.venv
+[SERVER] Using python: /opt/venv/bin/python
+ModuleNotFoundError: No module named 'jax'
+```
+
+原因：`openpi/.venv/bin/python` 指向 uv 管理的解释器
+`/root/.local/share/uv/python/cpython-3.11-linux-x86_64-gnu/bin/python3.11`，
+该目录在容器 home 下、**重建容器后丢失**（venv 在 `/root/workspace` 卷上仍在），
+软链悬挂 → `command -v python` 静默回退到 `/opt/venv/bin/python`（无 jax）。
+
+修复（无需重建 venv，site-packages 完好）：
+
+```bash
+uv python install 3.11
+/root/workspace/RoboTwin/XPolicyLab/policy/Pi_05/openpi/.venv/bin/python -c "import jax; print(jax.__version__, jax.devices())"
+```
+
+自检：`openpi/.venv/bin/python -V` 必须能输出版本（如 `Python 3.11.17`）。
+`Pi_05/setup_eval_policy_server.sh` 已改为显式引用该解释器并做存在性校验。
+
+## 9. 排障：GPU 1 上 job 大面积失败 / 假成功（vulkan DeviceLost）
+
+现象（run `2026-10-18_03-17-38_653172`，50 任务全量）：
+
+- 只有 `adjust_bottle`(99%)、`beat_block_hammer`(90%) 真正跑完，其余 48 个 job 12.3s 就结束且被记为 `success`；
+- 这些假成功日志只有 `Render Error` + `[MAIN] eval finished`；
+- 后续复跑又变成 `RuntimeError: cannot create buffer`（`envs/camera/camera.py` 取样时）
+  和 `vk::Device::waitForFences: ErrorDeviceLost`。
+
+根因：**GPU 1 显存被容器外的进程占用约 19GB**（`nvidia-smi` 无 process 但显存不释放，
+`/proc/*/fd` 也找不到持有者），单 job 峰值需 ~12GB，总量撞到 32.6GB 上限后
+sapien 的光追渲染器直接 device lost。
+
+实测（同一批任务）：
+
+| GPU | 空闲显存 | 峰值总占用 | 结果                   |
+| --- | -------- | ---------- | ---------------------- |
+| 0   | ~27GB    | ~17GB      | 3/3 成功               |
+| 1   | ~13GB    | ~31.3GB    | 3/3 失败（DeviceLost） |
+
+处理：
+
+- `env_cfg/eval/{all,batch,smoke,remaining}_tasks.yml` 全部固定 `gpu_ids: "0"`；
+- `XPolicyLab/policy/Pi_05/{eval.sh,setup_eval_policy_server.sh}` 增加
+  `XLA_PYTHON_CLIENT_PREALLOCATE=false`，避免 jax 预留 30% 显存把渲染色吃满；
+- `scripts/test_render.py` 改为 `traceback.print_exc()` + `sys.exit(1)`，
+  渲染自检失败不再被记成 `success`；
+- 等 GPU 1 空闲（`nvidia-smi` 显示 ~0MiB）后再改回 `gpu_ids: "0-1"` 可翻倍吞吐。
+
+## 10. 已知非阻塞警告
 
 - `missing pytorch3d`（`envs/camera/camera.py`）：不需要 3D 数据时可忽略。
 - `OIDN Error: unsupported device type: CUDA`：降噪器在 CUDA 上不可用，渲染正常，每帧刷错。

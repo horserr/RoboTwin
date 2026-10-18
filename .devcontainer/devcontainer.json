@@ -69,7 +69,8 @@
         "charliermarsh.ruff",
         "the0807.uv-toolkit",
         "fill-labs.dependi",
-        "meta.pyrefly"
+        "meta.pyrefly",
+        "iliazeus.vscode-ansi"
       ]
     }
   },

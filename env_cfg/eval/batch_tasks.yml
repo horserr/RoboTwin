@@ -1,5 +1,6 @@
 # Small diverse batch to verify the pipeline across task types before the full run.
-gpu_ids: "0-1"
+# GPU 0 only: GPU 1 has ~19GB held by a non-container process -> vulkan DeviceLost.
+gpu_ids: "0"
 jobs_per_gpu: 1
 num_workers: 1
 enable_remote: false
