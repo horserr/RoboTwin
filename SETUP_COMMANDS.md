@@ -271,7 +271,24 @@ vulkan loader 会同时尝试 NVIDIA 与 Mesa，不会再因为单点失败而�
 > 结论：凡是「手动在容器里装/改」的东西，一律写回 `.devcontainer/Dockerfile`，
 > 否则下次 rebuild 必然复发（tzdata、Vulkan ICD 软链都属此类）。
 
-### 12.2 每次 rebuild 后按顺序过一遍
+### 12.2 每次 rebuild 后先跑自检脚本
+
+```bash
+cd /root/workspace/RoboTwin
+bash .devcontainer/check.sh   # 9 组检查；--quick 跳过渲染；--fix 自动补 ICD 软链 + uv python 3.11
+```
+
+> `devcontainer.json` 的 `onCreateCommand` 末尾已自动执行
+> `check.sh --fix --soft`：重建容器时会自动补 ICD 软链、装 uv Python 3.11；
+> `--soft` 保证自检 FAIL 不会中断容器创建，报错需回看创建日志。
+> 觉得环境可疑时，仍建议手动跑一次全量 `bash .devcontainer/check.sh`。
+
+退出码 `0` = 无 FAIL（允许 WARN），`1` = 存在 FAIL。脚本做 9 组检查：
+GPU 显存/残留 → `/opt/venv` 与 torch/CUDA → Vulkan ICD → `test_render.py`
+→ `uv lock --check` → openpi 解释器与 jax → assets/checkpoint → 注入的 token
+→ 磁盘与宿主遗留 `.venv`。
+
+下面是与脚本等价的手工版，便于单独排查某一项：
 
 ```bash
 cd /root/workspace/RoboTwin

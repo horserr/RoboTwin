@@ -87,7 +87,11 @@
     "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
 
-  "onCreateCommand": "${containerWorkspaceFolder}/.devcontainer/initialize.sh && ${containerWorkspaceFolder}/.devcontainer/onCreate.sh",
+  // 最后一步跑环境自检（见 .devcontainer/check.sh）：
+  // --fix  自动补 /usr/share/vulkan/icd.d/nvidia_icd.json 软链、uv python install 3.11
+  // --soft 即使有 FAIL 也返回 0，避免自检失败导致整个容器创建中断；
+  //        具体报错在创建日志里，也可随时手动跑 bash .devcontainer/check.sh
+  "onCreateCommand": "${containerWorkspaceFolder}/.devcontainer/initialize.sh && ${containerWorkspaceFolder}/.devcontainer/onCreate.sh && ${containerWorkspaceFolder}/.devcontainer/check.sh --fix --soft",
 
   "postCreateCommand": "${containerWorkspaceFolder}/.devcontainer/postCreate.sh && ${containerWorkspaceFolder}/.devcontainer/installAssets.sh",
 
