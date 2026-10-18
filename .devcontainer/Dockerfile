@@ -1,7 +1,22 @@
-FROM nvcr.io/nvidia/cuda:12.8.1-cudnn-devel-ubuntu22.04 AS base
+FROM nvcr.io/nvidia/cuda:12.8.1-cudnn-devel-ubuntu24.04 AS base
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility,graphics
+ENV NVIDIA_DRIVER_CAPABILITIES=all
+
+RUN <<'CMD_EOF'
+mkdir -p /etc/vulkan/icd.d
+cat >/etc/vulkan/icd.d/nvidia_egl_icd.json <<'JSON_EOF'
+{
+  "file_format_version": "1.0.1",
+  "ICD": {
+    "library_path": "libEGL_nvidia.so.0",
+    "api_version": "1.4.312"
+  }
+}
+JSON_EOF
+CMD_EOF
+
+ENV VK_DRIVER_FILES=/etc/vulkan/icd.d/nvidia_egl_icd.json
 
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   --mount=type=cache,target=/var/lib/apt,sharing=locked \
@@ -12,6 +27,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   unzip \
   ffmpeg \
   libvulkan1 \
+  libxext6 \
   mesa-vulkan-drivers \
   vulkan-tools \
   tzdata \
@@ -21,14 +37,6 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
   ninja-build \
   build-essential \
   && rm -rf /var/lib/apt/lists/*
-
-# SAPIEN 的 _vulkan_tricks.py 只认 /usr/share/vulkan/icd.d/nvidia_icd.json，
-# 找不到就回退到自带 ICD 并设置 VK_ICD_FILENAMES（api 1.2.140，且屏蔽 Mesa 回退），
-# 之后 vulkan 初始化一旦抖动就会直接抛 "failed to find a rendering device"。
-# nvidia-container-toolkit 在部分版本只挂载到 /etc/vulkan/icd.d，这里补一个链接。
-# 目标不存在时软链悬空，os.path.isfile() 为 False，行为与修复前一致（无副作用）。
-RUN mkdir -p /usr/share/vulkan/icd.d && \
-  ln -sfn /etc/vulkan/icd.d/nvidia_icd.json /usr/share/vulkan/icd.d/nvidia_icd.json
 
 # 创建 sshd 运行目录及 root 的 .ssh 目录，并赋予正确的权限（700）
 RUN mkdir -p /var/run/sshd /root/.ssh && chmod 700 /root/.ssh

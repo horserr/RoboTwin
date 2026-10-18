@@ -95,5 +95,6 @@
 
   "postCreateCommand": "${containerWorkspaceFolder}/.devcontainer/postCreate.sh && ${containerWorkspaceFolder}/.devcontainer/installAssets.sh",
 
-  "postStartCommand": "service ssh start"
+  // FIX: unset display is no use
+  "postStartCommand": "unset DISPLAY && service ssh start"
 }

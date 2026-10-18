@@ -116,37 +116,37 @@ else
 fi
 
 # ----------------------------- 3. Vulkan ICD --------------------------------
-section "3/9 Vulkan ICD（sapien 渲染依赖，第 11 节）"
-if [ -f "${ICD_LINK}" ]; then
-  pass "${ICD_LINK} 已就位"
-elif [ "${FIX}" -eq 1 ] && [ -f "${ICD_SRC}" ]; then
-  if mkdir -p "$(dirname "${ICD_LINK}")" && ln -sfn "${ICD_SRC}" "${ICD_LINK}"; then
-    pass "已补软链：${ICD_LINK} -> ${ICD_SRC}"
-  else
-    fail "补软链失败（权限？）：${ICD_LINK}"
-  fi
-else
-  if [ -f "${ICD_SRC}" ]; then
-    fail "${ICD_LINK} 缺失，sapien 会锁死 VK_ICD_FILENAMES（加 --fix 可修复）"
-  else
-    fail "NVIDIA ICD 完全缺失（${ICD_SRC} 不存在）：容器未挂载 graphics 驱动能力"
-  fi
-fi
+# section "3/9 Vulkan ICD（sapien 渲染依赖，第 11 节）"
+# if [ -f "${ICD_LINK}" ]; then
+#   pass "${ICD_LINK} 已就位"
+# elif [ "${FIX}" -eq 1 ] && [ -f "${ICD_SRC}" ]; then
+#   if mkdir -p "$(dirname "${ICD_LINK}")" && ln -sfn "${ICD_SRC}" "${ICD_LINK}"; then
+#     pass "已补软链：${ICD_LINK} -> ${ICD_SRC}"
+#   else
+#     fail "补软链失败（权限？）：${ICD_LINK}"
+#   fi
+# else
+#   if [ -f "${ICD_SRC}" ]; then
+#     fail "${ICD_LINK} 缺失，sapien 会锁死 VK_ICD_FILENAMES（加 --fix 可修复）"
+#   else
+#     fail "NVIDIA ICD 完全缺失（${ICD_SRC} 不存在）：容器未挂载 graphics 驱动能力"
+#   fi
+# fi
 
-if [ -x "${PY}" ]; then
-  vk_raw="$("${PY}" -W ignore -c 'import os,sapien; print(os.environ.get("VK_ICD_FILENAMES",""))' 2>/dev/null)"
-  vk_rc=$?
-  if [ "${vk_rc}" -ne 0 ]; then
-    warn "无法导入 sapien，跳过 VK_ICD_FILENAMES 检查"
-  else
-    vk_env="$(printf '%s\n' "${vk_raw}" | tail -1)"
-    if [ -n "${vk_env}" ]; then
-      warn "sapien 强制指定了 VK_ICD_FILENAMES=${vk_env}（失去 Mesa 回退，渲染更易失败）"
-    else
-      pass "sapien 未覆盖 VK_ICD_FILENAMES（使用系统全部 ICD）"
-    fi
-  fi
-fi
+# if [ -x "${PY}" ]; then
+#   vk_raw="$("${PY}" -W ignore -c 'import os,sapien; print(os.environ.get("VK_ICD_FILENAMES",""))' 2>/dev/null)"
+#   vk_rc=$?
+#   if [ "${vk_rc}" -ne 0 ]; then
+#     warn "无法导入 sapien，跳过 VK_ICD_FILENAMES 检查"
+#   else
+#     vk_env="$(printf '%s\n' "${vk_raw}" | tail -1)"
+#     if [ -n "${vk_env}" ]; then
+#       warn "sapien 强制指定了 VK_ICD_FILENAMES=${vk_env}（失去 Mesa 回退，渲染更易失败）"
+#     else
+#       pass "sapien 未覆盖 VK_ICD_FILENAMES（使用系统全部 ICD）"
+#     fi
+#   fi
+# fi
 
 # ----------------------------- 4. 渲染自检 ----------------------------------
 section "4/9 渲染自检 scripts/test_render.py"

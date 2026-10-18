@@ -23,9 +23,21 @@ uv sync --frozen
 
 echo "Adjusting code in sapien/wrapper/urdf_loader.py ..."
 # location of sapien, like "~/.conda/envs/RoboTwin/lib/python3.10/site-packages/sapien"
-SAPIEN_LOCATION=$(uv pip show sapien | grep 'Location' | awk '{print $2}')/sapien
+# NOTE: `uv pip show` ignores UV_PROJECT_ENVIRONMENT and falls back to the
+# uv-managed interpreter, which does not have sapien installed. Pass --python
+# explicitly so the project venv is inspected.
+sapien_location=$(uv pip show --python "${VENV}" sapien | awk '/^Location:/ {print $2}')
+if [ -z "${sapien_location}" ]; then
+    echo "error: cannot locate sapien in ${VENV}" >&2
+    exit 1
+fi
+SAPIEN_LOCATION=${sapien_location}/sapien
 # Adjust some code in wrapper/urdf_loader.py
 URDF_LOADER=$SAPIEN_LOCATION/wrapper/urdf_loader.py
+if [ ! -f "${URDF_LOADER}" ]; then
+    echo "error: ${URDF_LOADER} does not exist" >&2
+    exit 1
+fi
 # ----------- before -----------
 # 667         with open(urdf_file, "r") as f:
 # 668             urdf_string = f.read()
@@ -48,7 +60,12 @@ sed -i -E 's/("r")(\))( as)/\1, encoding="utf-8") as/g' $URDF_LOADER
 
 echo "Adjusting code in mplib/planner.py ..."
 # location of mplib, like "~/.conda/envs/RoboTwin/lib/python3.10/site-packages/mplib"
-MPLIB_LOCATION=$(uv pip show mplib | grep 'Location' | awk '{print $2}')/mplib
+mplib_location=$(uv pip show --python "${VENV}" mplib | awk '/^Location:/ {print $2}')
+if [ -z "${mplib_location}" ]; then
+    echo "error: cannot locate mplib in ${VENV}" >&2
+    exit 1
+fi
+MPLIB_LOCATION=${mplib_location}/mplib
 
 # Adjust some code in planner.py
 # ----------- before -----------
@@ -58,4 +75,8 @@ MPLIB_LOCATION=$(uv pip show mplib | grep 'Location' | awk '{print $2}')/mplib
 # 807             if np.linalg.norm(delta_twist) < 1e-4 or not within_joint_limit:
 # 808                 return {"status": "screw plan failed"}
 PLANNER=$MPLIB_LOCATION/planner.py
+if [ ! -f "${PLANNER}" ]; then
+    echo "error: ${PLANNER} does not exist" >&2
+    exit 1
+fi
 sed -i -E 's/(if np.linalg.norm\(delta_twist\) < 1e-4 )(or collide )(or not within_joint_limit:)/\1\3/g' $PLANNER
