@@ -15,6 +15,14 @@
     }
   },
 
+  // forward ssh port
+  "appPort": ["2222:2222"],
+  "portsAttributes": {
+    "2222": {
+      "label": "SSH Server"
+    }
+  },
+
   "runArgs": [
     // note: cannot use host network for wslc
     // use this domain for windows host: host.docker.internal
@@ -76,10 +84,12 @@
   },
 
   "features": {
-    // "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
   },
 
   "onCreateCommand": "${containerWorkspaceFolder}/.devcontainer/initialize.sh && ${containerWorkspaceFolder}/.devcontainer/onCreate.sh",
 
-  "postCreateCommand": "${containerWorkspaceFolder}/.devcontainer/postCreate.sh && ${containerWorkspaceFolder}/.devcontainer/installAssets.sh"
+  "postCreateCommand": "${containerWorkspaceFolder}/.devcontainer/postCreate.sh && ${containerWorkspaceFolder}/.devcontainer/installAssets.sh",
+
+  "postStartCommand": "service ssh start"
 }
